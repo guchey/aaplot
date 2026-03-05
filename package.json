@@ -1,0 +1,23 @@
+{
+  "name": "aaplot",
+  "version": "0.1.0",
+  "description": "Terminal charts from BigQuery JSON output",
+  "type": "module",
+  "bin": {
+    "aaplot": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build --compile --minify src/index.ts --outfile dist/aaplot",
+    "build:linux-x64": "bun build --compile --target=bun-linux-x64 src/index.ts --outfile dist/aaplot-linux-x64",
+    "build:darwin-arm64": "bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile dist/aaplot-darwin-arm64",
+    "build:darwin-x64": "bun build --compile --target=bun-darwin-x64 src/index.ts --outfile dist/aaplot-darwin-x64",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
