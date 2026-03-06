@@ -6,7 +6,7 @@ A CLI tool that renders terminal charts from BigQuery query results.
 
 Pipe `bq query --format=json` output and visualize it with Unicode characters. Compiled into a single binary with Bun. Designed for both human and AI agent usage.
 
-**8 chart types:** bar, line, area, scatter, histogram, count, boxplot, density
+**11 chart types:** bar (+ stacked), line, area, scatter, histogram, count, boxplot, density, heatmap, sparkline
 
 ## Installation
 
@@ -45,6 +45,20 @@ bq query --format=json 'SELECT score FROM ...' | aaplot boxplot --x=score
 
 # Density plot (KDE)
 bq query --format=json 'SELECT latency FROM ...' | aaplot density --x=latency
+
+# Heatmap
+bq query --format=json 'SELECT day, hour, count FROM ...' | aaplot heatmap --x=hour --y=day --value=count
+
+# Stacked bar
+bq query --format=json 'SELECT month, product, sales FROM ...' \
+  | aaplot bar --x=month --y=sales --group=product --stacked
+
+# 100% stacked bar
+bq query --format=json 'SELECT month, product, sales FROM ...' \
+  | aaplot bar --x=month --y=sales --group=product --percent
+
+# Sparkline (compact single-line)
+bq query --format=json 'SELECT value FROM ...' | aaplot sparkline --x=value
 ```
 
 ### Multi-series with `--group`
@@ -224,21 +238,71 @@ Horizontal box-and-whisker plot showing min, Q1, median, Q3, and max. Use `--gro
 
 Kernel Density Estimation (KDE) with Gaussian kernel and Silverman's bandwidth. Curve and fill rendered with Braille characters. Use `--group` to overlay multiple distributions.
 
+### Heatmap (`heatmap`)
+
+```
+                Activity Heatmap
+
+Mon            ░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒███████████
+Tue            ▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░
+Wed ▒▒▒▒▒▒▒▒▒▒▒                      ▓▓▓▓▓▓▓▓▓▓▓
+Thu ▒▒▒▒▒▒▒▒▒▒▒███████████▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░
+    9          10         11         12
+    10     ░░░░▒▒▒▒▓▓▓▓████ 90
+```
+
+Grid visualization with `░▒▓█` shade levels and color ramp (blue→cyan→green→yellow→red). Requires `--x`, `--y`, and `--value` fields.
+
+### Stacked Bar (`bar --stacked`)
+
+```
+                Monthly Sales (Stacked)
+
+     60┤                              ▆▆▆▆▆▆▆▆▆▆▆▆▆▆
+     40┤               ▅▅▅▅▅▅▅▅▅▅▅▅▅▅ ██████████████
+       │▄▄▄▄▄▄▄▄▄▄▄▄▄▄ ██████████████ ██████████████
+       │██████████████ ██████████████ ██████████████
+     20┤██████████████ ██████████████ ██████████████
+       │██████████████ ██████████████ ██████████████
+      0┤██████████████ ██████████████ ██████████████
+       └──────────────────────────────────────────────
+       Jan                    Feb                   Mar
+        ━━ A  ━━ B  ━━ C
+```
+
+Use `--stacked` with `--group` to stack series. Add `--percent` for 100% normalized stacked bars.
+
+### Sparkline (`sparkline`)
+
+```
+Revenue ▁▂▁▅▄▇▆▃▇▂█▅ 5..35
+```
+
+Compact single-line chart using block elements (`▁▂▃▄▅▆▇█`). Perfect for inline dashboards. Use `--group` to show multiple series:
+
+```
+cpu ▁▃▅▇██ 10..90
+mem ▁▂▄▅▇█ 40..65
+```
+
 ## Options
 
 | Option | Description |
 |---|---|
 | `--x <field>` | X axis field name |
-| `--y <field>` | Y axis field name (required except for histogram, count, boxplot, density) |
+| `--y <field>` | Y axis field name (required except for histogram, count, boxplot, density, sparkline; row field for heatmap) |
 | `--width <n>` | Canvas width override (default: terminal width) |
 | `--height <n>` | Canvas height override (default: terminal height) |
 | `--theme <t>` | Color theme: `dark` / `light` / `auto` (default: `auto`) |
 | `--title <t>` | Chart title |
 | `--json <data>` | Inline JSON data (alternative to stdin) |
-| `--group <field>` | Group by field for multi-series (bar, line, area, scatter, boxplot, density) |
+| `--group <field>` | Group by field for multi-series (bar, line, area, scatter, boxplot, density, sparkline) |
 | `--color` | Force color output (for non-TTY environments) |
 | `--dry-run` | Validate input only, skip rendering |
 | `--bins <n>` | Number of bins (histogram only) |
+| `--value <field>` | Numeric value field (heatmap only) |
+| `--stacked` | Stack series instead of grouping side-by-side (bar only) |
+| `--percent` | Normalize stacked bars to 100% (bar only) |
 
 ## AI Agent Features
 
@@ -296,7 +360,7 @@ bun run build:darwin-x64
 
 GitHub Actions runs on push / PR to main:
 
-1. **test** — `bun test` (171 tests)
+1. **test** — `bun test` (195 tests)
 2. **build** — Compile single binary and upload as artifact
 
 ## Tech Stack

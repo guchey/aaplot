@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 bun install              # install dependencies
-bun test                 # run all tests (171 tests across 14 files)
+bun test                 # run all tests (195 tests across 17 files)
 bun test tests/parser.test.ts          # run a single test file
 bun test --filter="groupRows"          # run tests matching a pattern
 bun run build            # compile single binary → dist/aaplot

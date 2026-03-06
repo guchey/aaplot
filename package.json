@@ -12,12 +12,16 @@
     "build:linux-x64": "bun build --compile --target=bun-linux-x64 src/index.ts --outfile dist/aaplot-linux-x64",
     "build:darwin-arm64": "bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile dist/aaplot-darwin-arm64",
     "build:darwin-x64": "bun build --compile --target=bun-darwin-x64 src/index.ts --outfile dist/aaplot-darwin-x64",
-    "test": "bun test"
+    "test": "bun test",
+    "lint": "biome check ./src ./tests",
+    "lint:fix": "biome check --write ./src ./tests",
+    "format": "biome format --write ./src ./tests"
   },
   "dependencies": {
     "commander": "^13.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
     "@types/bun": "latest"
   }
 }
