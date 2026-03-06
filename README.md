@@ -90,65 +90,62 @@ Rendered with block elements (`▁▂▃▄▅▆▇█`) at 1/8 character preci
 ### Line Chart (`line`)
 
 ```
-     30┤                                      ●
-       │                                     ─ ─
-       │                         ●          ─   ─
-       │                        ─ ─        ─     ─
-     20┤                       ─    ─     ─        ─
-       │             ●─      ─        ─ ─          ●
-       │           ──  ──   ─          ●
-     10┤          ─      ── ─
-       │         ─         ●
-       │       ──
-       │      ●
+     40┤
+       │                                ⢀⠴⢷
+     30┤                ⢀⣄            ⡠⠒⠁  ⠱⡀
+       │               ⢀⠜⠙⢄         ⡾⠋      ⠑⡄
+       │     ⣠⡀       ⡠⠊  ⠈⢆      ⢀⠎         ⠈⢆
+     20┤    ⢠⠋⠉⠢⢄    ⡔⠁     ⠣⡀   ⢠⠃           ⠈⢢⡀⣀⣀⠤⠤⠺
+       │   ⡠⠃    ⠉⠢⣤⡎        ⠱⡀ ⡰⠁             ⠈⠋
+     10┤  ⡰⠁       ⠈          ⠸⡾
+       │ ⡜
+       │⡾
       0┤
-       └───────────────────────────────────────────────────
-        0            2           4            6           8
+       └──────────────────────────────────────────────
+        0          2           4          6          8
 ```
 
-Points connected with Bresenham's algorithm. Data points marked with `●`.
+Lines rendered with Braille characters (2×4 subpixels per cell) via Bresenham's algorithm for smooth curves.
 
 ### Area Chart (`area`)
 
 ```
-     30┤                               ▄▄
-       │                              ▄░░▄▄▄▄
-       │                            ▄▄░░░░░░░▄▄
-       │                   ▄▄▄     ▄░░░░░░░░░░░▄▄
-     20┤                 ▄▄░░░▄▄▄▄▄░░░░░░░░░░░░░░▄▄
-       │                ▄░░░░░░░░░░░░░░░░░░░░░░░░░░▄
-       │               ▄░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-     10┤     ▄▄▄▄▄▄   ▄░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-       │  ▄▄▄░░░░░░▄▄▄░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-       │▄▄░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-       │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-      0┤░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-       └───────────────────────────────────────────────
-       Jan    Feb    Mar    Apr     May    Jun    Jul    Aug
+     30┤                           ⢀⠎⠒⢄⡀
+       │                          ⡠⠃⣿⣿⣿⠈⠑⠤⡀
+       │                 ⣀       ⡰⠁⣿⣿⣿⣿⣿⣿⣿⠈⢢
+     20┤                ⡜⣿⠉⠒⠤⣀ ⢀⠜⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠑⢄
+       │               ⡜⣿⣿⣿⣿⣿⣿⠉⠊⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠱⡀
+       │              ⡜⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠈⠂
+       │     ⡠⢄⡀     ⡜⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+     10┤  ⢀⡠⠊⣿⣿⠈⠑⠢⢄⡀⡜⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+       │⢀⠔⠁⣿⣿⣿⣿⣿⣿⣿⣿⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+       │⠁⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+      0┤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+       └──────────────────────────────────────────────
+       Jan          Mar          May          Jul
 ```
 
-Line chart with the region below filled using `░`. Column-by-column interpolation for gap-free rendering.
+Area filled and line drawn with Braille characters at subpixel resolution for smooth curves and dense fills.
 
 ### Scatter Plot (`scatter`)
 
 ```
-     20┤
-       │
-       │                                                  ⠐
-     15┤                       ⠈      ⠠
-       │                           ⡀         ⠁
-     10┤                                 ⠐          ⡀
-       │                                        ⠠
-       │             ⢀   ⠁
-      5┤          ⡀
-       │                    ⠄
-       │   ⠠  ⠈
+     20┤                                       ⠈
+       │                           ⠈
+     15┤                     ⡀                    ⠐
+       │                                 ⠐
+       │               ⠂              ⢀
+     10┤                                             ⠐
+       │            ⠄           ⠈
+      5┤      ⠁                             ⠠
+       │                  ⠁
+       │   ⠂     ⡀
       0┤
-       └───────────────────────────────────────────────
-        0                5              10               15
+       └──────────────────────────────────────────────
+        0              5             10             15
 ```
 
-Uses Braille characters (U+2800–U+28FF) for high resolution at 2x4 pixels per character cell.
+Uses Braille characters (U+2800–U+28FF) for high resolution at 2×4 subpixels per character cell.
 
 ### Histogram (`histogram`)
 
@@ -211,21 +208,21 @@ Horizontal box-and-whisker plot showing min, Q1, median, Q3, and max. Use `--gro
 
 ```
    0.15┤            Density of val
-       │                     ●●●
-       │                    ●░░●●
-    0.1┤                   ●░░░░░●
-       │                  ●░░░░░░░●
-       │                 ●░░░░░░░░░●
-       │                ●░░░░░░░░░░●
-   0.05┤                ░░░░░░░░░░░░●
-       │              ●●░░░░░░░░░░░░░●●
-       │            ●●░░░░░░░░░░░░░░░░░●●● ●●●●●
-      0┤        ●●●●░░░░░░░░░░░░░░░░░░░░░░●░░░░░●●●●●
+       │                ⡠⠒⠢⢄
+       │              ⡠⠊⣿⣿⣿⠈⢆
+    0.1┤             ⡰⠁⣿⣿⣿⣿⣿⠈⢆
+       │            ⡜⣿⣿⣿⣿⣿⣿⣿⣿⠈⢆
+       │           ⡜⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠈⡆
+       │         ⢀⠎⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠘⡄
+   0.05┤        ⢀⠎⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠘⡄
+       │       ⢠⠃⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠈⠢⡀
+       │     ⢀⠔⠁⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠈⠢⣀      ⣀⣀⡀
+      0┤⣀⣀⡠⠤⠒⠁⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠉⠒⠒⠒⠊⠉⣿⣿⠈⠉⠒⠤⠤⣀⣀⣀
        └──────────────────────────────────────────────
         0             10             20             30
 ```
 
-Kernel Density Estimation (KDE) with Gaussian kernel and Silverman's bandwidth. Smoothed alternative to histogram. Use `--group` to overlay multiple distributions.
+Kernel Density Estimation (KDE) with Gaussian kernel and Silverman's bandwidth. Curve and fill rendered with Braille characters. Use `--group` to overlay multiple distributions.
 
 ## Options
 
