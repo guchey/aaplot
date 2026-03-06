@@ -17,7 +17,7 @@ describe("getSchema", () => {
   });
 
   test("returns valid JSON for all known commands", () => {
-    for (const cmd of ["bar", "line", "area", "scatter", "histogram"]) {
+    for (const cmd of ["bar", "line", "area", "scatter", "histogram", "count", "boxplot", "density"]) {
       const result = JSON.parse(getSchema(cmd));
       expect(result.command).toBe(cmd);
       expect(result.required).toBeDefined();
@@ -47,8 +47,8 @@ describe("getSchema", () => {
 describe("getAllSchemas", () => {
   test("returns valid JSON with all commands", () => {
     const result = JSON.parse(getAllSchemas());
-    expect(result.commands).toEqual(["bar", "line", "area", "scatter", "histogram"]);
-    expect(Object.keys(result.schemas)).toEqual(["bar", "line", "area", "scatter", "histogram"]);
+    expect(result.commands).toEqual(["bar", "line", "area", "scatter", "histogram", "count", "boxplot", "density"]);
+    expect(Object.keys(result.schemas)).toEqual(["bar", "line", "area", "scatter", "histogram", "count", "boxplot", "density"]);
   });
 
   test("each schema has required fields", () => {

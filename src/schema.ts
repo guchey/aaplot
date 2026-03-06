@@ -65,6 +65,30 @@ const SCHEMAS: Record<string, CommandSchema> = {
     input: "JSON array via stdin or --json flag",
     input_example: [{ score: "72" }, { score: "85" }, { score: "91" }],
   },
+  count: {
+    command: "count",
+    description: "Count occurrences of each unique value and render as bar chart",
+    required: { x: "string (field name, categorical)" },
+    optional: baseOptional,
+    input: "JSON array via stdin or --json flag",
+    input_example: [{ status: "active" }, { status: "pending" }, { status: "active" }],
+  },
+  boxplot: {
+    command: "boxplot",
+    description: "Horizontal box-and-whisker plot showing Q1, median, Q3, min, max",
+    required: { x: "string (field name, numeric)" },
+    optional: commonOptional,
+    input: "JSON array via stdin or --json flag",
+    input_example: [{ score: "72" }, { score: "85" }, { score: "91" }, { score: "68" }],
+  },
+  density: {
+    command: "density",
+    description: "Density plot using Gaussian KDE for smoothed distribution visualization",
+    required: { x: "string (field name, numeric)" },
+    optional: commonOptional,
+    input: "JSON array via stdin or --json flag",
+    input_example: [{ latency: "12.5" }, { latency: "15.3" }, { latency: "11.8" }],
+  },
 };
 
 export function getSchema(command: string): string {

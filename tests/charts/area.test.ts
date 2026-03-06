@@ -10,6 +10,8 @@ const defaultOpts: CommonOptions = {
   height: 15,
 };
 
+const hasBraille = (s: string) => /[\u2800-\u28FF]/.test(s);
+
 describe("renderArea", () => {
   test("renders without throwing", () => {
     const points: DataPoint[] = [
@@ -22,23 +24,14 @@ describe("renderArea", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  test("contains fill character", () => {
+  test("contains braille characters for fill and line", () => {
     const points: DataPoint[] = [
       { x: 1, y: 10 },
       { x: 2, y: 20 },
       { x: 3, y: 15 },
     ];
     const result = renderArea(points, null, defaultOpts);
-    expect(result).toContain("░");
-  });
-
-  test("contains line character", () => {
-    const points: DataPoint[] = [
-      { x: 1, y: 10 },
-      { x: 2, y: 20 },
-    ];
-    const result = renderArea(points, null, defaultOpts);
-    expect(result).toContain("▄");
+    expect(hasBraille(result)).toBe(true);
   });
 
   test("handles categorical labels", () => {
@@ -57,7 +50,7 @@ describe("renderArea", () => {
       { x: 10, y: 50 },
     ];
     const result = renderArea(points, null, defaultOpts);
-    expect(result).toContain("░");
+    expect(hasBraille(result)).toBe(true);
   });
 
   test("renders title", () => {

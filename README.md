@@ -6,6 +6,8 @@ A CLI tool that renders terminal charts from BigQuery query results.
 
 Pipe `bq query --format=json` output and visualize it with Unicode characters. Compiled into a single binary with Bun. Designed for both human and AI agent usage.
 
+**8 chart types:** bar, line, area, scatter, histogram, count, boxplot, density
+
 ## Installation
 
 ```bash
@@ -34,6 +36,15 @@ bq query --format=json 'SELECT distance, fare FROM ...' | aaplot scatter --x=dis
 
 # Histogram
 bq query --format=json 'SELECT score FROM ...' | aaplot histogram --x=score --bins=10
+
+# Count (auto-aggregate occurrences)
+bq query --format=json 'SELECT status FROM ...' | aaplot count --x=status
+
+# Boxplot
+bq query --format=json 'SELECT score FROM ...' | aaplot boxplot --x=score
+
+# Density plot (KDE)
+bq query --format=json 'SELECT latency FROM ...' | aaplot density --x=latency
 ```
 
 ### Multi-series with `--group`
@@ -43,7 +54,7 @@ bq query --format=json 'SELECT year, status, COUNT(*) AS count FROM ...' \
   | aaplot line --x=year --y=count --group=status
 ```
 
-Available for `bar`, `line`, `area`, and `scatter`. Each series is rendered in a different color with a legend at the bottom.
+Available for `bar`, `line`, `area`, `scatter`, `boxplot`, and `density`. Each series is rendered in a different color with a legend at the bottom.
 
 ### Inline JSON
 
@@ -160,18 +171,74 @@ Uses Braille characters (U+2800–U+28FF) for high resolution at 2x4 pixels per 
 
 Auto-binning via Sturges' rule (`bins = ceil(log2(n) + 1)`). Override with `--bins`.
 
+### Count (`count`)
+
+```
+                    Count of status
+
+     15┤
+       │
+       │▅▅▅▅▅▅▅▅▅▅▅▅▅▅
+     10┤██████████████
+       │██████████████
+      5┤██████████████
+       │██████████████ ██████████████ ▃▃▃▃▃▃▃▃▃▃▃▃▃▃
+       │██████████████ ██████████████ ██████████████
+      0┤██████████████ ██████████████ ██████████████
+       └──────────────────────────────────────────────
+     active                 pending                erro
+```
+
+Automatically counts occurrences of each unique value and renders as a bar chart. No pre-aggregation needed — pipe raw query results directly.
+
+### Boxplot (`boxplot`)
+
+```
+       │
+       │
+       │               ┌──────────────┐
+  score│      ├────────┤━━━━━│━━━━━━━━├────────┤
+       │               └──────────────┘
+       │
+       │
+       └──────────────────────────────────────────────
+       60         70          80         90         100
+```
+
+Horizontal box-and-whisker plot showing min, Q1, median, Q3, and max. Use `--group` to compare distributions across categories.
+
+### Density (`density`)
+
+```
+   0.15┤            Density of val
+       │                     ●●●
+       │                    ●░░●●
+    0.1┤                   ●░░░░░●
+       │                  ●░░░░░░░●
+       │                 ●░░░░░░░░░●
+       │                ●░░░░░░░░░░●
+   0.05┤                ░░░░░░░░░░░░●
+       │              ●●░░░░░░░░░░░░░●●
+       │            ●●░░░░░░░░░░░░░░░░░●●● ●●●●●
+      0┤        ●●●●░░░░░░░░░░░░░░░░░░░░░░●░░░░░●●●●●
+       └──────────────────────────────────────────────
+        0             10             20             30
+```
+
+Kernel Density Estimation (KDE) with Gaussian kernel and Silverman's bandwidth. Smoothed alternative to histogram. Use `--group` to overlay multiple distributions.
+
 ## Options
 
 | Option | Description |
 |---|---|
 | `--x <field>` | X axis field name |
-| `--y <field>` | Y axis field name (required except for histogram) |
+| `--y <field>` | Y axis field name (required except for histogram, count, boxplot, density) |
 | `--width <n>` | Canvas width override (default: terminal width) |
 | `--height <n>` | Canvas height override (default: terminal height) |
 | `--theme <t>` | Color theme: `dark` / `light` / `auto` (default: `auto`) |
 | `--title <t>` | Chart title |
 | `--json <data>` | Inline JSON data (alternative to stdin) |
-| `--group <field>` | Group by field for multi-series (bar, line, area, scatter) |
+| `--group <field>` | Group by field for multi-series (bar, line, area, scatter, boxplot, density) |
 | `--color` | Force color output (for non-TTY environments) |
 | `--dry-run` | Validate input only, skip rendering |
 | `--bins <n>` | Number of bins (histogram only) |
@@ -232,7 +299,7 @@ bun run build:darwin-x64
 
 GitHub Actions runs on push / PR to main:
 
-1. **test** — `bun test` (145 tests)
+1. **test** — `bun test` (171 tests)
 2. **build** — Compile single binary and upload as artifact
 
 ## Tech Stack

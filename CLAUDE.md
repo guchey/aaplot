@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 bun install              # install dependencies
-bun test                 # run all tests (145 tests across 11 files)
+bun test                 # run all tests (171 tests across 14 files)
 bun test tests/parser.test.ts          # run a single test file
 bun test --filter="groupRows"          # run tests matching a pattern
 bun run build            # compile single binary → dist/aaplot
@@ -35,15 +35,17 @@ stdin/--json → parser/json.ts → validator.ts → charts/*.ts → renderer/*.
 
 ### Rendering techniques
 
-- **Bar/Histogram**: Block elements `▁▂▃▄▅▆▇█` at 1/8 character precision
+- **Bar/Histogram/Count**: Block elements `▁▂▃▄▅▆▇█` at 1/8 character precision
 - **Line**: Bresenham's algorithm with `─` segments and `●` markers
 - **Area**: Column-by-column interpolation with `░` fill
 - **Scatter**: Braille characters (U+2800–U+28FF) for 2×4 pixel resolution per cell
+- **Boxplot**: Box-drawing characters (`┌┐└┘├┤─━│`) for horizontal box-and-whisker
+- **Density**: Gaussian KDE with `●` curve markers and `░` fill
 
 ### Key design decisions
 
 - All BigQuery values arrive as strings; numeric conversion happens in parser/validator
 - Chart output goes to **stdout** (not stderr)
 - `isNoColor()` checks `NO_COLOR` env, `FORCE_COLOR` env, and `stderr.isTTY`
-- Multi-series: `--group <field>` option on bar/line/area/scatter (not histogram). Each series gets a distinct color from the palette with a legend row at the bottom
+- Multi-series: `--group <field>` option on bar/line/area/scatter/boxplot/density (not histogram/count). Each series gets a distinct color from the palette with a legend row at the bottom
 - Agent-first features: `aaplot schema [command]` for JSON introspection, `--dry-run` for validation-only, `--json` for inline data

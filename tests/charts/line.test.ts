@@ -10,6 +10,8 @@ const defaultOpts: CommonOptions = {
   height: 15,
 };
 
+const hasBraille = (s: string) => /[\u2800-\u28FF]/.test(s);
+
 describe("renderLine", () => {
   test("renders without throwing", () => {
     const points: DataPoint[] = [
@@ -22,22 +24,13 @@ describe("renderLine", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  test("contains point markers", () => {
+  test("contains braille characters for line and markers", () => {
     const points: DataPoint[] = [
       { x: 1, y: 10 },
       { x: 2, y: 20 },
     ];
     const result = renderLine(points, null, defaultOpts);
-    expect(result).toContain("●");
-  });
-
-  test("contains line drawing characters", () => {
-    const points: DataPoint[] = [
-      { x: 1, y: 10 },
-      { x: 5, y: 20 },
-    ];
-    const result = renderLine(points, null, defaultOpts);
-    expect(result).toContain("─");
+    expect(hasBraille(result)).toBe(true);
   });
 
   test("renders with categorical x labels", () => {
@@ -54,7 +47,7 @@ describe("renderLine", () => {
   test("handles single point", () => {
     const points: DataPoint[] = [{ x: 5, y: 10 }];
     const result = renderLine(points, null, defaultOpts);
-    expect(result).toContain("●");
+    expect(hasBraille(result)).toBe(true);
   });
 
   test("handles two points", () => {
@@ -63,7 +56,7 @@ describe("renderLine", () => {
       { x: 10, y: 10 },
     ];
     const result = renderLine(points, null, defaultOpts);
-    expect(result).toContain("●");
+    expect(hasBraille(result)).toBe(true);
   });
 
   test("renders title", () => {
@@ -88,9 +81,9 @@ describe("renderMultiLine", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  test("contains point markers", () => {
+  test("contains braille characters", () => {
     const result = renderMultiLine(multiSeries, ["Jan", "Feb"], defaultOpts);
-    expect(result).toContain("●");
+    expect(hasBraille(result)).toBe(true);
   });
 
   test("contains legend keys", () => {
@@ -105,6 +98,6 @@ describe("renderMultiLine", () => {
       { key: "S2", points: [{ x: 1, y: 5 }, { x: 2, y: 15 }] },
     ];
     const result = renderMultiLine(series, null, defaultOpts);
-    expect(result).toContain("●");
+    expect(hasBraille(result)).toBe(true);
   });
 });

@@ -1,13 +1,17 @@
 #!/usr/bin/env bun
 
 import { Command } from "commander";
-import { readInput, extractXY, extractColumn, groupRows } from "./parser/json.ts";
+import { readInput, extractXY, extractColumn, extractStringColumn, groupRows, groupByField } from "./parser/json.ts";
 import { renderBar, renderGroupedBar } from "./charts/bar.ts";
 import { renderLine, renderMultiLine } from "./charts/line.ts";
 import { renderArea, renderMultiArea } from "./charts/area.ts";
 import { renderScatter, renderMultiScatter } from "./charts/scatter.ts";
 import { renderHistogram } from "./charts/histogram.ts";
+import { renderCount } from "./charts/count.ts";
+import { renderBoxplot, renderGroupedBoxplot } from "./charts/boxplot.ts";
+import { renderDensity, renderMultiDensity } from "./charts/density.ts";
 import { getSchema, getAllSchemas } from "./schema.ts";
+import { installSkills } from "./skills.ts";
 import type { CommonOptions, HistogramOptions } from "./charts/types.ts";
 
 const program = new Command();
@@ -105,6 +109,20 @@ async function handleDryRun(
   }
   return true;
 }
+
+// ── install ───────────────────────────────────────────────────────────────────
+program
+  .command("install")
+  .description("Install aaplot integrations")
+  .option("--skills", "Install Claude Code skills into .claude/skills/aaplot/")
+  .action(async (opts) => {
+    if (opts.skills) {
+      await installSkills();
+    } else {
+      process.stderr.write("Usage: aaplot install --skills\n");
+      process.exit(1);
+    }
+  });
 
 // ── schema ────────────────────────────────────────────────────────────────────
 program
@@ -244,6 +262,152 @@ addCommonOptions(
       width: opts.width, height: opts.height,
     };
     output(renderHistogram(values, opts.x, hopts));
+  } catch (e) {
+    process.stderr.write(`aaplot error: ${(e as Error).message}\n`);
+    process.exit(1);
+  }
+});
+
+// ── count ────────────────────────────────────────────────────────────────────
+addCommonOptions(
+  program
+    .command("count")
+    .description("Count occurrences of each value and render as bar chart")
+    .requiredOption("--x <field>", "field to count occurrences of")
+).action(async (opts) => {
+  try {
+    if (opts.dryRun) {
+      const rows = await readInput(opts.json);
+      const values = extractStringColumn(rows, opts.x);
+      const unique = new Set(values);
+      process.stdout.write(
+        JSON.stringify({
+          ok: true,
+          rows: rows.length,
+          unique_values: unique.size,
+        }) + "\n"
+      );
+      return;
+    }
+    const rows = await readInput(opts.json);
+    const values = extractStringColumn(rows, opts.x);
+    output(renderCount(values, opts.x, {
+      x: opts.x,
+      theme: resolveTheme(opts.theme),
+      title: opts.title,
+      width: opts.width,
+      height: opts.height,
+    }));
+  } catch (e) {
+    process.stderr.write(`aaplot error: ${(e as Error).message}\n`);
+    process.exit(1);
+  }
+});
+
+// ── boxplot ──────────────────────────────────────────────────────────────────
+addGroupOption(
+  addCommonOptions(
+    program
+      .command("boxplot")
+      .description("Boxplot (horizontal box-and-whisker)")
+      .requiredOption("--x <field>", "numeric field for values")
+  )
+).action(async (opts) => {
+  try {
+    if (opts.dryRun) {
+      const rows = await readInput(opts.json);
+      if (opts.group) {
+        const groups = groupByField(rows, opts.x, opts.group);
+        process.stdout.write(
+          JSON.stringify({
+            ok: true,
+            rows: rows.length,
+            groups: groups.length,
+            group_keys: groups.map((g: { key: string }) => g.key),
+          }) + "\n"
+        );
+      } else {
+        const values = extractColumn(rows, opts.x);
+        process.stdout.write(
+          JSON.stringify({
+            ok: true,
+            rows: rows.length,
+            range: [Math.min(...values), Math.max(...values)],
+          }) + "\n"
+        );
+      }
+      return;
+    }
+    const rows = await readInput(opts.json);
+    const baseOpts = {
+      x: opts.x,
+      theme: resolveTheme(opts.theme),
+      title: opts.title,
+      width: opts.width,
+      height: opts.height,
+    };
+    if (opts.group) {
+      const groups = groupByField(rows, opts.x, opts.group);
+      output(renderGroupedBoxplot(groups, baseOpts));
+    } else {
+      const values = extractColumn(rows, opts.x);
+      output(renderBoxplot(values, opts.x, baseOpts));
+    }
+  } catch (e) {
+    process.stderr.write(`aaplot error: ${(e as Error).message}\n`);
+    process.exit(1);
+  }
+});
+
+// ── density ──────────────────────────────────────────────────────────────────
+addGroupOption(
+  addCommonOptions(
+    program
+      .command("density")
+      .description("Density plot (KDE smoothed distribution)")
+      .requiredOption("--x <field>", "numeric field")
+  )
+).action(async (opts) => {
+  try {
+    if (opts.dryRun) {
+      const rows = await readInput(opts.json);
+      if (opts.group) {
+        const groups = groupByField(rows, opts.x, opts.group);
+        process.stdout.write(
+          JSON.stringify({
+            ok: true,
+            rows: rows.length,
+            groups: groups.length,
+            group_keys: groups.map((g: { key: string }) => g.key),
+          }) + "\n"
+        );
+      } else {
+        const values = extractColumn(rows, opts.x);
+        process.stdout.write(
+          JSON.stringify({
+            ok: true,
+            rows: rows.length,
+            range: [Math.min(...values), Math.max(...values)],
+          }) + "\n"
+        );
+      }
+      return;
+    }
+    const rows = await readInput(opts.json);
+    const baseOpts = {
+      x: opts.x,
+      theme: resolveTheme(opts.theme),
+      title: opts.title,
+      width: opts.width,
+      height: opts.height,
+    };
+    if (opts.group) {
+      const groups = groupByField(rows, opts.x, opts.group);
+      output(renderMultiDensity(groups, baseOpts));
+    } else {
+      const values = extractColumn(rows, opts.x);
+      output(renderDensity(values, opts.x, baseOpts));
+    }
   } catch (e) {
     process.stderr.write(`aaplot error: ${(e as Error).message}\n`);
     process.exit(1);

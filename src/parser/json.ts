@@ -142,3 +142,34 @@ export function extractColumn(rows: Row[], field: string): number[] {
   validateFieldExists(rows, field);
   return rows.map((row, i) => parseNumeric(row[field]!, field, i));
 }
+
+/** Extract a single string column (for count) */
+export function extractStringColumn(rows: Row[], field: string): string[] {
+  validateFieldExists(rows, field);
+  return rows.map((row) => row[field]!);
+}
+
+/** Group rows by a field and extract numeric values for each group (for boxplot/density) */
+export function groupByField(
+  rows: Row[],
+  valueField: string,
+  groupField: string
+): { key: string; values: number[] }[] {
+  validateFieldExists(rows, valueField);
+  validateFieldExists(rows, groupField);
+
+  const groups = new Map<string, number[]>();
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]!;
+    const key = row[groupField]!;
+    const value = parseNumeric(row[valueField]!, valueField, i);
+    let bucket = groups.get(key);
+    if (!bucket) {
+      bucket = [];
+      groups.set(key, bucket);
+    }
+    bucket.push(value);
+  }
+
+  return [...groups.entries()].map(([key, values]) => ({ key, values }));
+}

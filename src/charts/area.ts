@@ -2,6 +2,20 @@ import type { DataPoint, CommonOptions, Series } from "./types.ts";
 import { Canvas, getTerminalSize } from "../renderer/canvas.ts";
 import { computeScale, computePlotArea, drawAxes, drawTitle, drawLegend } from "../renderer/axis.ts";
 import { resolvePalette, isNoColor, getSeriesColor } from "../renderer/color.ts";
+import { BrailleBuffer } from "../renderer/braille.ts";
+
+/** Interpolate y value at dataX from sorted points */
+function interpolateY(points: DataPoint[], dataX: number): number | null {
+  for (let i = 1; i < points.length; i++) {
+    const p0 = points[i - 1]!;
+    const p1 = points[i]!;
+    if (dataX >= p0.x && dataX <= p1.x) {
+      const t = p1.x === p0.x ? 0 : (dataX - p0.x) / (p1.x - p0.x);
+      return p0.y + t * (p1.y - p0.y);
+    }
+  }
+  return null;
+}
 
 export function renderArea(
   points: DataPoint[],
@@ -20,46 +34,39 @@ export function renderArea(
   const xScale = computeScale(Math.min(...xValues), Math.max(...xValues));
   const yScale = computeScale(Math.min(...yValues), Math.max(...yValues));
 
-  const baselineY = area.top + area.height - 1;
-
   drawAxes(canvas, area, xLabels ? null : xScale, yScale, xLabels, palette, nc);
   drawTitle(canvas, opts.title, palette, nc);
 
-  const fillColor = nc ? "" : palette.fill;
-  const lineColor = nc ? "" : palette.line;
+  const buf = new BrailleBuffer(area);
 
-  // For each column, interpolate y and fill below
-  for (let col = 0; col < area.width; col++) {
+  // For each subpixel column, interpolate y and fill below
+  for (let px = 0; px < buf.pixWidth; px++) {
     const dataX = xScale.range === 0
       ? xScale.min
-      : xScale.min + (col / (area.width - 1)) * xScale.range;
+      : xScale.min + (px / (buf.pixWidth - 1)) * xScale.range;
 
-    // Linear interpolation
-    let y: number | null = null;
-    for (let i = 1; i < points.length; i++) {
-      const p0 = points[i - 1]!;
-      const p1 = points[i]!;
-      if (dataX >= p0.x && dataX <= p1.x) {
-        const t = p1.x === p0.x ? 0 : (dataX - p0.x) / (p1.x - p0.x);
-        y = p0.y + t * (p1.y - p0.y);
-        break;
-      }
-    }
-
+    const y = interpolateY(points, dataX);
     if (y === null) continue;
 
-    const canvasY = yScale.range === 0
-      ? area.top + Math.floor(area.height / 2)
-      : area.top + area.height - 1 - Math.round(((y - yScale.min) / yScale.range) * (area.height - 1));
-
-    // Line pixel
-    canvas.set(area.left + col, canvasY, "▄", lineColor);
-
-    // Fill below
-    for (let row = canvasY + 1; row <= baselineY; row++) {
-      canvas.set(area.left + col, row, "░", fillColor);
-    }
+    const py = buf.mapY(y, yScale.min, yScale.range);
+    buf.fillDown(px, py, buf.pixHeight - 1);
   }
+
+  // Draw line on top with a separate buffer for crispness
+  const lineBuf = new BrailleBuffer(area);
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1]!;
+    const curr = points[i]!;
+    lineBuf.line(
+      lineBuf.mapX(prev.x, xScale.min, xScale.range),
+      lineBuf.mapY(prev.y, yScale.min, yScale.range),
+      lineBuf.mapX(curr.x, xScale.min, xScale.range),
+      lineBuf.mapY(curr.y, yScale.min, yScale.range)
+    );
+  }
+
+  buf.render(canvas, area, nc ? "" : palette.fill);
+  lineBuf.render(canvas, area, nc ? "" : palette.line);
 
   return canvas.render(nc);
 }
@@ -83,44 +90,27 @@ export function renderMultiArea(
   const xScale = computeScale(Math.min(...xValues), Math.max(...xValues));
   const yScale = computeScale(Math.min(...yValues), Math.max(...yValues));
 
-  const baselineY = area.top + area.height - 1;
-
   drawAxes(canvas, area, xLabels ? null : xScale, yScale, xLabels, palette, nc);
   drawTitle(canvas, opts.title, palette, nc);
 
-  // Draw each series (later series draw on top)
   for (let si = 0; si < series.length; si++) {
     const s = series[si]!;
-    const fillColor = nc ? "" : getSeriesColor(palette, si);
-    const lineColor = fillColor;
+    const color = nc ? "" : getSeriesColor(palette, si);
+    const buf = new BrailleBuffer(area);
 
-    for (let col = 0; col < area.width; col++) {
+    for (let px = 0; px < buf.pixWidth; px++) {
       const dataX = xScale.range === 0
         ? xScale.min
-        : xScale.min + (col / (area.width - 1)) * xScale.range;
+        : xScale.min + (px / (buf.pixWidth - 1)) * xScale.range;
 
-      let y: number | null = null;
-      for (let i = 1; i < s.points.length; i++) {
-        const p0 = s.points[i - 1]!;
-        const p1 = s.points[i]!;
-        if (dataX >= p0.x && dataX <= p1.x) {
-          const t = p1.x === p0.x ? 0 : (dataX - p0.x) / (p1.x - p0.x);
-          y = p0.y + t * (p1.y - p0.y);
-          break;
-        }
-      }
-
+      const y = interpolateY(s.points, dataX);
       if (y === null) continue;
 
-      const canvasY = yScale.range === 0
-        ? area.top + Math.floor(area.height / 2)
-        : area.top + area.height - 1 - Math.round(((y - yScale.min) / yScale.range) * (area.height - 1));
-
-      canvas.set(area.left + col, canvasY, "▄", lineColor);
-      for (let row = canvasY + 1; row <= baselineY; row++) {
-        canvas.set(area.left + col, row, "░", fillColor);
-      }
+      const py = buf.mapY(y, yScale.min, yScale.range);
+      buf.fillDown(px, py, buf.pixHeight - 1);
     }
+
+    buf.render(canvas, area, color);
   }
 
   const seriesColors = series.map((_, i) => getSeriesColor(palette, i));
